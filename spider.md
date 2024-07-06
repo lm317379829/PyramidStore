@@ -5,6 +5,8 @@
 
 spider提供了一些需要被实现的方法和一些公共方法，请自行查阅
 
+使用 [base/local.py](https://github.com/lm317379829/PyramidStore/blob/main/base/local.py) 进行爬虫调试，所有待调试的爬虫需位于plugin目录下
+
 #### 快速开发
 
 参考[py_bilibilivd.py](https://github.com/lm317379829/PyramidStore/blob/main/plugin/py_bilibilivd.py)进行快速开发
