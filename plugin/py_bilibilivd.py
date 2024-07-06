@@ -501,7 +501,7 @@ class Spider(Spider):  # 元类 默认的元类 type
 			thread = '0'
 		result["parse"] = 0
 		result["playUrl"] = ''
-		result["url"] = f'http://127.0.0.1:UndCover/proxy?do=py&type=mpd&cookies={cookies}&url={quote(url)}&aid={aid}&cid={cid}&thread={thread}'
+		result["url"] = f'http://127.0.0.1:9978/proxy?do=py&type=mpd&cookies={cookies}&url={quote(url)}&aid={aid}&cid={cid}&thread={thread}'
 		result["header"] = self.header
 		result['danmaku'] = 'https://api.bilibili.com/x/v1/dm/list.so?oid={}'.format(cid)
 		result["format"] = 'application/dash+xml'
