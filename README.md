@@ -1,6 +1,6 @@
 # Pyramid
 
-基于[PyramidStore](https://github.com/UndCover/PyramidStore)，用于支持影视及其衍生app使用python爬虫作为数据源，[源码地址](https://github.com/UndCover/Pyramid)
+基于[PyramidStore](https://github.com/UndCover/PyramidStore)，用于支持影视及其衍生app使用python爬虫作为数据源，[原版Pyramid源码地址](https://github.com/UndCover/Pyramid)
 
 ## 免责声明
 
@@ -12,7 +12,7 @@
 
 ### [Python爬虫写法参考](https://github.com/lm317379829/PyramidStore/blob/main/spider.md)
 
-### [源码地址](https://github.com/UndCover/Pyramid)
+### [影视版源码地址](https://github.com/FongMi/TV/tree/release/pyramid)
 
 ### 问题反馈
 问题请反馈到[telegram](https://t.me/+A3SLQRmPVi9kOThl)
