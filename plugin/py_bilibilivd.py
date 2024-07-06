@@ -177,7 +177,7 @@ class Spider(Spider):  # 元类 默认的元类 type
 				vid = vod['id']
 				title = vod['title'].strip()
 				remark = vod['media_count']
-				img = 'https://api-lmteam.koyeb.app/files/shoucang.png'
+				img = 'https://vpsdn.leuse.top/files/img/favorites.png'
 				videos.append({
 					"vod_id": f'fav&&&{vid}',
 					"vod_name": title,
