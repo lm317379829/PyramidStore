@@ -1,6 +1,6 @@
 # Pyramid
 
-用于支持TvBox/影视及其衍生app使用python爬虫作为数据源，[源码地址](https://github.com/UndCover/Pyramid)
+基于[PyramidStore](https://github.com/UndCover/PyramidStore)，用于支持影视及其衍生app使用python爬虫作为数据源，[源码地址](https://github.com/UndCover/Pyramid)
 
 ## 免责声明
 
