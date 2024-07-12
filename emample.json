@@ -1,0 +1,32 @@
+[
+    {
+        "key": "py_bilibilivd",
+        "name": "哔哩哔哩",
+        "type": 3,
+        "api": "爬虫所在位置/py_bilibilivd.py",
+        "searchable": 1,
+        "quickSearch": 1,
+        "filterable": 1,
+        "ext": {
+            "categories": "沙雕动画#相声小品",
+            "cookie": "B站cookies"
+        },
+        "changeable": 1
+    },
+    {
+        "key": "py_emby",
+        "name": "EMBY",
+        "type": 3,
+        "api": "爬虫所在位置/py_emby.py",
+        "searchable": 1,
+        "quickSearch": 1,
+        "filterable": 1,
+        "ext": {
+            "server": "服务器地址",
+            "username": "用户名",
+            "password": "密码",
+            "thread": 0 //thread 大于0开启多线程，thread为线程数
+        },
+        "changeable": 1
+    }
+]
