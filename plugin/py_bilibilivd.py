@@ -5,9 +5,6 @@ import json
 import time
 from datetime import datetime
 from urllib.parse import quote, unquote
-
-import requests
-
 sys.path.append('..')
 from base.spider import Spider
 
@@ -68,7 +65,7 @@ class Spider(Spider):  # 元类 默认的元类 type
 			for cate in cateList:
 				result['class'].append({'type_name': cate, 'type_id': cate})
 		if not 'class' in result:
-			result['class'] = {"type_name": "沙雕动漫", "type_id": "沙雕动漫"}
+			result['class'] = [{"type_name": "沙雕动漫", "type_id": "沙雕动漫"}]
 		return result
 
 	def homeVideoContent(self):
@@ -530,7 +527,7 @@ class Spider(Spider):  # 元类 默认的元类 type
 			if '127.0.0.1:7777' in url:
 				header["Location"] = url
 				return [302, "video/MP2T", None, header]
-			r = requests.get(url, headers=header, stream=True)
+			r = self.fetch(url, headers=header, stream=True)
 			return [206, "application/octet-stream", r.content]
 
 	def proxyMedia(self, params, forceRefresh=False):
@@ -553,7 +550,7 @@ class Spider(Spider):  # 元类 默认的元类 type
 		header = self.header.copy()
 		if 'range' in params:
 			header['Range'] = params['range']
-		r = requests.get(url, headers=header, stream=True)
+		r = self.fetch(url, headers=header, stream=True)
 		return [206, "application/octet-stream", r.content]
 
 	def getDash(self, params, forceRefresh=False):
