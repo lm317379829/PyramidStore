@@ -19,10 +19,13 @@ class Spider(Spider):
 			extendDict = json.loads(extend)
 			self.baseUrl = extendDict['server'].strip('/')
 			self.username = extendDict['username']
-			self.password   = extendDict['password']
+			self.password = extendDict['password']
 			self.thread = extendDict['thread'] if 'thread' in extendDict else 0
 		except:
-			return {'list': [], 'msg': '请在配置文件中正确填入服务器信息'}
+			self.baseUrl = ''
+			self.username = ''
+			self.password = ''
+			self.thread = 0
 
 	def isVideoFormat(self, url):
 		pass
@@ -34,7 +37,7 @@ class Spider(Spider):
 		try:
 			embyInfos = self.getAccessToken()
 		except:
-			return {'list': [], 'msg': '获取Emby服务器信息出错'}
+			return {'msg': '获取Emby服务器信息出错'}
 
 		header = self.header.copy()
 		header['Content-Type'] = "application/json; charset=UTF-8"
@@ -57,14 +60,16 @@ class Spider(Spider):
 		return result
 
 	def homeVideoContent(self):
-		pass
+		return {}
 
 	def categoryContent(self, cid, page, filter, ext):
 		try:
 			embyInfos = self.getAccessToken()
 		except:
 			return {'list': [], 'msg': '获取Emby服务器信息出错'}
+
 		result = {}
+		page = int(page)
 		header = self.header.copy()
 		header['Content-Type'] = "application/json; charset=UTF-8"
 		url = f"{self.baseUrl}/emby/Users/{embyInfos['User']['Id']}/Items"
@@ -77,29 +82,29 @@ class Spider(Spider):
 			"SortBy": "SortName",
 			"SortOrder": "Ascending",
 			"Fields": "BasicSyncInfo,CanDelete,Container,PrimaryImageAspectRatio,Prefix",
-			"StartIndex": (int(page) - 1) * 30,
+			"StartIndex": str((page - 1) * 30),
 			"ParentId": cid,
 			"EnableImageTypes": "Primary,Backdrop,Thumb",
 			"ImageTypeLimit": 1,
 			"GroupItemsIntoCollections": "true",
-			"Limit": 30
+			"Limit": "30"
 		}
 		r = requests.get(url, params=params, headers=header, timeout=30)
 		videoList = r.json()['Items']
-		result['list'] = []
+		videos = []
 		for video in videoList:
-			result['list'].append(
-				{
-					"vod_id": video['Id'],
-					"vod_name": video['Name'],
-					"vod_pic": f"{self.baseUrl}/emby/Items/{video['Id']}/Images/Primary?maxWidth=400&tag={video['ImageTags']['Primary']}&quality=90" if 'Primary' in video['ImageTags'] else '',
-					"vod_remarks": video['ProductionYear'] if 'ProductionYear' in video else ''
-				}
-			)
+			name = self.cleanText(video['Name'])
+			videos.append({
+				"vod_id": video['Id'],
+				"vod_name": name,
+				"vod_pic": f"{self.baseUrl}/emby/Items/{video['Id']}/Images/Primary?maxWidth=400&tag={video['ImageTags']['Primary']}&quality=90" if 'Primary' in video['ImageTags'] else '',
+				"vod_remarks": video['ProductionYear'] if 'ProductionYear' in video else ''
+			})
+		result['list'] = videos
 		result['page'] = page
 		result['pagecount'] = page + 1 if page * 30 < int(r.json()['TotalRecordCount']) else page
-		result['limit'] = 30
-		result['total'] = int(r.json()['TotalRecordCount']) if 'TotalRecordCount' in r.json() else 0
+		result['limit'] = len(videos)
+		result['total'] = len(videos)
 		return result
 
 	def detailContent(self, did):
@@ -188,7 +193,7 @@ class Spider(Spider):
 			embyInfos = self.getAccessToken()
 		except:
 			return {'list': [], 'msg': '获取Emby服务器信息出错'}
-
+		page = int(page)
 		header = self.header.copy()
 		header['Content-Type'] = "application/json; charset=UTF-8"
 		url = f"{self.baseUrl}/emby/Users/{embyInfos['User']['Id']}/Items"
@@ -201,7 +206,7 @@ class Spider(Spider):
 			"SortBy": "SortName",
 			"SortOrder": "Ascending",
 			"Fields": "BasicSyncInfo,CanDelete,Container,PrimaryImageAspectRatio,ProductionYear,Status,EndDate",
-			"StartIndex": str(((int(page)-1)*50)),
+			"StartIndex": str(((page-1)*50)),
 			"EnableImageTypes": "Primary,Backdrop,Thumb",
 			"ImageTypeLimit": "1",
 			"Recursive": "true",
@@ -211,7 +216,6 @@ class Spider(Spider):
 			"Limit": "50",
 			"EnableTotalRecordCount": "true"
 		}
-
 		r = requests.get(url, params=params, headers=header, timeout=30)
 
 		videos = []
@@ -219,12 +223,12 @@ class Spider(Spider):
 		for vod in vodList:
 			sid = vod['Id']
 			name = self.cleanText(vod['Name'])
-			pic = f'{self.baseUrl}/emby/Items/{sid}/Images/Primary?maxWidth=400&tag={vod["ImageTags"]["Primary"]}&quality=90'
+			pic = f'{self.baseUrl}/emby/Items/{sid}/Images/Primary?maxWidth=400&tag={vod["ImageTags"]["Primary"]}&quality=90' if 'Primary' in vod["ImageTags"] else ''
 			videos.append({
 				"vod_id": sid,
 				"vod_name": name,
 				"vod_pic": pic,
-				"vod_remarks": vod['ProductionYear']
+				"vod_remarks": vod['ProductionYear'] if 'ProductionYear' in vod else ''
 			})
 		result = {'list': videos}
 		return result
@@ -284,6 +288,7 @@ class Spider(Spider):
 
 	def getCache(self, key):
 		value = self.fetch(f'http://127.0.0.1:9978/cache?do=get&key={key}', timeout=5).text
+		# value = self.fetch(f'http://192.168.1.254:9978/cache?do=get&key={key}', timeout=5).text
 		if len(value) > 0:
 			if value.startswith('{') and value.endswith('}') or value.startswith('[') and value.endswith(']'):
 				value = json.loads(value)
@@ -302,9 +307,11 @@ class Spider(Spider):
 			if type(value) == dict or type(value) == list:
 				value = json.dumps(value, ensure_ascii=False)
 		self.post(f'http://127.0.0.1:9978/cache?do=set&key={key}', data={"value": value}, timeout=5)
+		# self.post(f'http://192.168.1.254:9978/cache?do=set&key={key}', data={"value": value}, timeout=5)
 
 	def delCache(self, key):
 		self.fetch(f'http://127.0.0.1:9978/cache?do=del&key={key}', timeout=5)
+		# self.fetch(f'http://192.168.1.254:9978/cache?do=del&key={key}', timeout=5)
 
 	header = {"User-Agent": "Yamby/1.0.2(Android"}
 
