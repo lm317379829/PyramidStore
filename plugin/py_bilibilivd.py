@@ -177,7 +177,7 @@ class Spider(Spider):  # 元类 默认的元类 type
 				vid = vod['id']
 				title = vod['title'].strip()
 				remark = vod['media_count']
-				img = 'https://vpsdn.leuse.top/files/img/favorites.png'
+				img = 'https://api-lmteam.koyeb.app/files/shoucang.png'
 				videos.append({
 					"vod_id": f'fav&&&{vid}',
 					"vod_name": title,
@@ -403,7 +403,7 @@ class Spider(Spider):  # 元类 默认的元类 type
 			result = {
 				'list': videos
 			}
-			return result, 14400
+			return result
 		cookie = ''
 		if 'cookie' in self.extendDict:
 			cookie = self.extendDict['cookie']
@@ -614,7 +614,7 @@ class Spider(Spider):  # 元类 默认的元类 type
 			void = video['id']
 			vidparams = params.copy()
 			vidparams['videoid'] = videoid
-			baseUrl = f'http://127.0.0.1:UndCover/proxy?do=py&type=media&cookies={quote(json.dumps(cookies))}&url={quote(url)}&aid={aid}&cid={cid}&videoid={videoid}'
+			baseUrl = f'http://127.0.0.1:9978/proxy?do=py&type=media&cookies={quote(json.dumps(cookies))}&url={quote(url)}&aid={aid}&cid={cid}&videoid={videoid}'
 			videoinfo = videoinfo + f"""	      <Representation bandwidth="{bandwidth}" codecs="{codecs}" frameRate="{frameRate}" height="{height}" id="{void}" width="{width}">
 	        <BaseURL>{baseUrl}</BaseURL>
 	        <SegmentBase indexRange="{video['SegmentBase']['indexRange']}">
@@ -636,7 +636,7 @@ class Spider(Spider):  # 元类 默认的元类 type
 			aoid = audio['id']
 			aidparams = params.copy()
 			aidparams['audioid'] = audioid
-			baseUrl = f'http://127.0.0.1:UndCover/proxy?do=py&type=media&cookies={quote(json.dumps(cookies))}&url={quote(url)}&aid={aid}&cid={cid}&audioid={audioid}'
+			baseUrl = f'http://127.0.0.1:9978/proxy?do=py&type=media&cookies={quote(json.dumps(cookies))}&url={quote(url)}&aid={aid}&cid={cid}&audioid={audioid}'
 			audioinfo = audioinfo + f"""	      <Representation audioSamplingRate="44100" bandwidth="{bandwidth}" codecs="{codecs}" id="{aoid}">
 	        <BaseURL>{baseUrl}</BaseURL>
 	        <SegmentBase indexRange="{audio['SegmentBase']['indexRange']}">
