@@ -79,15 +79,17 @@ class Spider(Spider):
 			"X-Emby-Device-Id": embyInfos['SessionInfo']['DeviceId'],
 			"X-Emby-Client-Version": embyInfos['SessionInfo']['ApplicationVersion'],
 			"X-Emby-Token": embyInfos['AccessToken'],
-			"SortBy": "SortName",
-			"SortOrder": "Ascending",
-			"Fields": "BasicSyncInfo,CanDelete,Container,PrimaryImageAspectRatio,Prefix",
-			"StartIndex": str((page - 1) * 30),
+			"SortBy": "DateLastContentAdded,SortName",
+			"IncludeItemTypes": "Movie,Series",
+			"SortOrder": "Descending",
 			"ParentId": cid,
-			"EnableImageTypes": "Primary,Backdrop,Thumb",
+			"Recursive": "true",
+			"Limit": "30",
 			"ImageTypeLimit": 1,
-			"GroupItemsIntoCollections": "true",
-			"Limit": "30"
+			"StartIndex": str((page - 1) * 30),
+			"EnableImageTypes": "Primary,Backdrop,Thumb,Banner",
+			"Fields": "BasicSyncInfo,CanDelete,Container,PrimaryImageAspectRatio,ProductionYear,CommunityRating,Status,CriticRating,EndDate,Path",
+			"EnableUserData": "true"
 		}
 		r = requests.get(url, params=params, headers=header, timeout=30)
 		videoList = r.json()['Items']
@@ -104,7 +106,7 @@ class Spider(Spider):
 		result['page'] = page
 		result['pagecount'] = page + 1 if page * 30 < int(r.json()['TotalRecordCount']) else page
 		result['limit'] = len(videos)
-		result['total'] = len(videos)
+		result['total'] = int(r.json()['TotalRecordCount']) if "TotalRecordCount" in r.json() else 0
 		return result
 
 	def detailContent(self, did):
@@ -162,7 +164,7 @@ class Spider(Spider):
 					r = requests.get(url, params=params, headers=header, timeout=30)
 					videoList = r.json()['Items']
 					for video in videoList:
-						playUrl += f"{playInfo['Name'].strip()}|{video['Name'].strip()}${video['Id']}#"
+						playUrl += f"{playInfo['Name'].replace('#', '-').replace('$', '|').strip()}|{video['Name'].strip()}${video['Id']}#"
 			else:
 				url = f"{self.baseUrl}/emby/Users/{embyInfos['User']['Id']}/Items"
 				params = {
@@ -180,7 +182,7 @@ class Spider(Spider):
 				r = requests.get(url, params=params, headers=header, timeout=30)
 				videoList = r.json()['Items']
 				for video in videoList:
-					playUrl += f"{video['Name'].strip()}${video['Id']}#"
+					playUrl += f"{video['Name'].replace('#', '-').replace('$', '|').strip()}${video['Id']}#"
 		vod['vod_play_url'] = playUrl.strip('#')
 		result = {'list': [vod]}
 		return result
@@ -288,7 +290,6 @@ class Spider(Spider):
 
 	def getCache(self, key):
 		value = self.fetch(f'http://127.0.0.1:9978/cache?do=get&key={key}', timeout=5).text
-		# value = self.fetch(f'http://192.168.1.254:9978/cache?do=get&key={key}', timeout=5).text
 		if len(value) > 0:
 			if value.startswith('{') and value.endswith('}') or value.startswith('[') and value.endswith(']'):
 				value = json.loads(value)
@@ -303,15 +304,14 @@ class Spider(Spider):
 			return None
 
 	def setCache(self, key, value):
+		value = str(value)
 		if len(value) > 0:
 			if type(value) == dict or type(value) == list:
 				value = json.dumps(value, ensure_ascii=False)
 		self.post(f'http://127.0.0.1:9978/cache?do=set&key={key}', data={"value": value}, timeout=5)
-		# self.post(f'http://192.168.1.254:9978/cache?do=set&key={key}', data={"value": value}, timeout=5)
 
 	def delCache(self, key):
 		self.fetch(f'http://127.0.0.1:9978/cache?do=del&key={key}', timeout=5)
-		# self.fetch(f'http://192.168.1.254:9978/cache?do=del&key={key}', timeout=5)
 
 	header = {"User-Agent": "Yamby/1.0.2(Android"}
 
