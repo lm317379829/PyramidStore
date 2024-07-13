@@ -304,7 +304,8 @@ class Spider(Spider):
 			return None
 
 	def setCache(self, key, value):
-		value = str(value)
+		if type(value) in [int, float]:
+			value = str(value)
 		if len(value) > 0:
 			if type(value) == dict or type(value) == list:
 				value = json.dumps(value, ensure_ascii=False)
