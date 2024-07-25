@@ -275,6 +275,9 @@ class Spider(Spider):
 	def localProxy(self, params):
 		pass
 
+	def destroy(self):
+		return '正常进入'
+
 	def getAccessToken(self):
 		key = f"emby_{self.baseUrl}_{self.username}_{self.password }"
 		embyInfos = self.getCache(key)
@@ -288,31 +291,8 @@ class Spider(Spider):
 		self.setCache(key, embyInfos)
 		return embyInfos
 
-	def getCache(self, key):
-		value = self.fetch(f'http://127.0.0.1:9978/cache?do=get&key={key}', timeout=5).text
-		if len(value) > 0:
-			if value.startswith('{') and value.endswith('}') or value.startswith('[') and value.endswith(']'):
-				value = json.loads(value)
-				if type(value) == dict:
-					if not 'expiresAt' in value or value['expiresAt'] >= int(time.time()):
-						return value
-					else:
-						self.delCache(key)
-						return None
-			return value
-		else:
-			return None
-
-	def setCache(self, key, value):
-		if type(value) in [int, float]:
-			value = str(value)
-		if len(value) > 0:
-			if type(value) == dict or type(value) == list:
-				value = json.dumps(value, ensure_ascii=False)
-		self.post(f'http://127.0.0.1:9978/cache?do=set&key={key}', data={"value": value}, timeout=5)
-
-	def delCache(self, key):
-		self.fetch(f'http://127.0.0.1:9978/cache?do=del&key={key}', timeout=5)
+	def destroy(self):
+		pass
 
 	header = {"User-Agent": "Yamby/1.0.2(Android"}
 
