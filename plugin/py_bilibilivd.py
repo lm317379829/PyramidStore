@@ -1,10 +1,14 @@
 ﻿#coding=utf-8
 #!/usr/bin/python
+import re
 import sys
 import json
 import time
 from datetime import datetime
 from urllib.parse import quote, unquote
+
+import requests
+
 sys.path.append('..')
 from base.spider import Spider
 
@@ -64,7 +68,7 @@ class Spider(Spider):  # 元类 默认的元类 type
 				cateList = self.extendDict['type'].split('#')
 			for cate in cateList:
 				result['class'].append({'type_name': cate, 'type_id': cate})
-		if not 'class' in result:
+		if not 'class' in result or result['class'] == []:
 			result['class'] = [{"type_name": "沙雕动漫", "type_id": "沙雕动漫"}]
 		return result
 
@@ -87,8 +91,8 @@ class Spider(Spider):  # 元类 默认的元类 type
 		except:
 			pass
 		cookie, imgKey, subKey = self.getCookie(cookie)
-		url = 'https://api.bilibili.com/x/web-interface/index/top/feed/rcmd?&y_num=1&fresh_type=3&feed_version=SEO_VIDEO&fresh_idx_1h=1&fetch_row=1&fresh_idx=1&brush=0&homepage_ver=1&ps=20'
-		r = self.fetch(url, cookies=cookie, headers=self.header, timeout=5)
+		url = 'https://api.bilibili.com/x/web-interface/index/top/feed/rcmd?y_num=1&fresh_type=3&feed_version=SEO_VIDEO&fresh_idx_1h=1&fetch_row=1&fresh_idx=1&brush=0&homepage_ver=1&ps=20'
+		r = requests.get(url, cookies=cookie, headers=self.header, timeout=5)
 		data = json.loads(self.cleanText(r.text))
 		try:
 			result['list'] = []
@@ -511,6 +515,9 @@ class Spider(Spider):  # 元类 默认的元类 type
 			return self.proxyMedia(params)
 		return None
 
+	def destroy(self):
+		pass
+
 	def proxyMpd(self, params):
 		content, durlinfos, mediaType = self.getDash(params)
 		if mediaType == 'mpd':
@@ -527,7 +534,7 @@ class Spider(Spider):  # 元类 默认的元类 type
 			if '127.0.0.1:7777' in url:
 				header["Location"] = url
 				return [302, "video/MP2T", None, header]
-			r = self.fetch(url, headers=header, stream=True)
+			r = requests.get(url, headers=header, stream=True)
 			return [206, "application/octet-stream", r.content]
 
 	def proxyMedia(self, params, forceRefresh=False):
@@ -550,7 +557,7 @@ class Spider(Spider):  # 元类 默认的元类 type
 		header = self.header.copy()
 		if 'range' in params:
 			header['Range'] = params['range']
-		r = self.fetch(url, headers=header, stream=True)
+		r = requests.get(url, headers=header, stream=True)
 		return [206, "application/octet-stream", r.content]
 
 	def getDash(self, params, forceRefresh=False):
@@ -579,7 +586,7 @@ class Spider(Spider):  # 元类 默认的元类 type
 		if not 'dash' in data['data']:
 			purl = data['data']['durl'][0]['url']
 			try:
-				expiresAt = int(self.regStr(reg='deadline=(\d+)', src=purl).group(1)) - 60
+				expiresAt = int(re.search(r'deadline=(\d+)', purl).group(1)) - 60
 			except:
 				expiresAt = int(time.time()) + 600
 			if int(thread) > 0:
@@ -599,7 +606,7 @@ class Spider(Spider):  # 元类 默认的元类 type
 		deadlineList = []
 		for video in dashinfos['video']:
 			try:
-				deadline = int(self.regStr(reg='deadline=(\d+)', src=video['baseUrl']).group(1))
+				deadline = int(re.search(r'deadline=(\d+)', video['baseUrl']).group(1))
 			except:
 				deadline = int(time.time()) + 600
 			deadlineList.append(deadline)
@@ -624,7 +631,7 @@ class Spider(Spider):  # 元类 默认的元类 type
 		# audioList = sorted(dashinfos['audio'], key=lambda x: x['bandwidth'], reverse=True)
 		for audio in dashinfos['audio']:
 			try:
-				deadline = int(self.regStr(reg='deadline=(\d+)', src=audio['baseUrl']).group(1))
+				deadline = int(re.search(r'deadline=(\d+)', audio['baseUrl']).group(1))
 			except:
 				deadline = int(time.time()) + 600
 			deadlineList.append(deadline)
@@ -670,7 +677,7 @@ class Spider(Spider):  # 元类 默认的元类 type
 		header = {
 			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.54 Safari/537.36"
 		}
-		r = self.fetch("http://api.bilibili.com/x/web-interface/nav", cookies=cookies, headers=header, timeout=10)
+		r = requests.get("http://api.bilibili.com/x/web-interface/nav", cookies=cookies, headers=header, timeout=10)
 		data = json.loads(r.text)
 		code = data["code"]
 		if code == 0:
@@ -696,30 +703,6 @@ class Spider(Spider):  # 元类 默认的元类 type
 		from re import sub, compile
 		clean = compile('<.*?>')
 		return sub(clean, '', src)
-
-	def getCache(self, key):
-		value = self.fetch(f'http://127.0.0.1:9978/cache?do=get&key={key}', timeout=5).text
-		if len(value) > 0:
-			if value.startswith('{') and value.endswith('}') or value.startswith('[') and value.endswith(']'):
-				value = json.loads(value)
-				if type(value) == dict:
-					if not 'expiresAt' in value or value['expiresAt'] >= int(time.time()):
-						return value
-					else:
-						self.delCache(key)
-						return None
-			return value
-		else:
-			return None
-
-	def setCache(self, key, value):
-		if len(value) > 0:
-			if type(value) == dict or type(value) == list:
-				value = json.dumps(value, ensure_ascii=False)
-		self.post(f'http://127.0.0.1:9978/cache?do=set&key={key}', data={"value": value}, timeout=5)
-
-	def delCache(self, key):
-		self.fetch(f'http://127.0.0.1:9978/cache?do=del&key={key}', timeout=5)
 
 	def encWbi(self, params, imgKey, subKey):
 		from hashlib import md5
