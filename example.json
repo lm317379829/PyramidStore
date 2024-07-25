@@ -28,5 +28,16 @@
             "thread": 0 //thread 大于0开启多线程，thread为线程数
         },
         "changeable": 1
+    },
+    {
+      "key": "py_alist",
+      "name": " Alist网盘",
+      "type": 3,
+      "api": "爬虫文件地址/py_alist.py",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1,
+      "changeable": 1,
+      "ext": {"json": "json格式配置文件地址", "adult": true, "missAvUrl": "唯一的刮削地址"}
     }
 ]
