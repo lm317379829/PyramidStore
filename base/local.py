@@ -83,11 +83,12 @@ def run(fileName, proxy=False):
         # formatJo = sp.decode('')
         # formatJo = sp.homeContent(True)  # 主页
         # formatJo = sp.homeVideoContent()  # 主页视频
-        formatJo = sp.searchContentPage("繁花", False, '1') # 搜索
-        # formatJo = sp.categoryContent('bilibili', 1, False, {})  # 分类
-        # formatJo = sp.detailContent([''])  # 详情
-        # formatJo = sp.playerContent("", '', {})  # 播放
-        # formatJo = sp.localProxy({}) # 本地代理
+        # formatJo = sp.searchContent("黄雀", False, '1') # 搜索
+        # formatJo = sp.categoryContent('1', "1", False, {})  # 分类
+        formatJo = sp.detailContent(['46906'])  # 详情
+        # formatJo = sp.playerContent("", '/mp4/20241104/645364799885189120/58/3d3cd5b932b3fa9ce5746ff5f7985457.mp4', {})  # 播放
+        # formatJo = sp.localProxy({"path":"/actors/o4rXhnUmEcg8AFFZMDNI1gAysXeVBaDwAQpf9N_tplv-dy-cropcenter_323_430.jpeg"}) # 本地代理
+        #  formatJo = sp.gettoken()
         print(formatJo)
     except Exception as erro:
         print(erro)
@@ -103,4 +104,4 @@ if __name__ == '__main__':
     run(PY爬虫文件名, 是否启用本地代理)
     再去run函数中修改函数参数
     """
-    run('py_bilibilivd', True)
+    run('py_live', False)
